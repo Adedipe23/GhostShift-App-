@@ -1,0 +1,26 @@
+# Node modules (installed fresh in container)
+node_modules/
+
+# Build output (generated during Docker build)
+dist/
+
+# Test artifacts
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docs
+*.md
+
+# Local env files
+.env
+.env.*
+
+# Vite cache
+.vite/

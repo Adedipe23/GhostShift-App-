@@ -1,0 +1,85 @@
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: ghostshift_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ghostshift_db
+      POSTGRES_USER: ghostshift
+      POSTGRES_PASSWORD: ghostshift_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghostshift -d ghostshift_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Django Backend (Gunicorn)
+  # ─────────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ghostshift_backend
+    restart: unless-stopped
+    # env_file sets env vars INSIDE the container (not for compose interpolation)
+    env_file: .env.docker
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - backend_static:/app/staticfiles
+      - backend_media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # FastAPI AI Microservice (Uvicorn)
+  # ─────────────────────────────────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ghostshift_ai
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8001/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # React Frontend (Nginx)
+  # Vite build-time env vars are baked into the JS bundle as build args.
+  # They point to /api/ which Nginx reverse-proxies to the backend container.
+  # ─────────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost/api
+        VITE_AI_SERVICE_URL: http://localhost:8001
+    container_name: ghostshift_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - ai-service
+
+volumes:
+  postgres_data:
+  backend_static:
+  backend_media:
