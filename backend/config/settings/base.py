@@ -89,33 +89,29 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # ---------------------------------------------------------------------------
-# Database — auto-switches between PostgreSQL (Docker) and SQLite (local dev)
+# Database
 # ---------------------------------------------------------------------------
-_DB_HOST = config("DB_HOST", default="")
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": config("DB_NAME", default="ghostshift_db"),
+#         "USER": config("DB_USER", default="ghostshift"),
+#         "PASSWORD": config("DB_PASSWORD", default="ghostshift_dev"),
+#         "HOST": config("DB_HOST", default="localhost"),
+#         "PORT": config("DB_PORT", default="5432"),
+#         "OPTIONS": {
+#             "connect_timeout": 10,
+#         },
+#     }
+# }
 
-if _DB_HOST:
-    # PostgreSQL — used inside Docker / CI / production
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("DB_NAME", default="ghostshift_db"),
-            "USER": config("DB_USER", default="ghostshift"),
-            "PASSWORD": config("DB_PASSWORD", default="ghostshift_dev"),
-            "HOST": _DB_HOST,
-            "PORT": config("DB_PORT", default="5432"),
-            "OPTIONS": {
-                "connect_timeout": 10,
-            },
-        }
+# Use local SQLite (on your PC)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # SQLite — zero-config for local development without Docker
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
