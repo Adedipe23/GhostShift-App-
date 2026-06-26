@@ -1,0 +1,41 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local development database
+db.sqlite3
+
+# Static/media (generated at runtime)
+staticfiles/
+media/
+
+# Tests
+tests/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Docs
+*.md
+
+# Environment files (injected via docker-compose)
+.env
+.env.*

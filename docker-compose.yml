@@ -1,0 +1,67 @@
+services:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: ghostshift_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ghostshift_db
+      POSTGRES_USER: ghostshift
+      POSTGRES_PASSWORD: ghostshift_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghostshift -d ghostshift_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Django Backend (Gunicorn)
+  # ─────────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ghostshift_backend
+    restart: unless-stopped
+    # env_file sets env vars INSIDE the container (not for compose interpolation)
+    env_file: .env.docker
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - backend_static:/app/staticfiles
+      - backend_media:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # React Frontend (Nginx)
+  # Vite build-time env vars are baked into the JS bundle as build args.
+  # They point to /api/ which Nginx reverse-proxies to the backend container.
+  # ─────────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost/api
+    container_name: ghostshift_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend_static:
+  backend_media:
