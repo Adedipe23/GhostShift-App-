@@ -25,6 +25,16 @@ cp ../.env.example ../.env
 python manage.py migrate
 python manage.py collectstatic --noinput 2>/dev/null || true
 
+<<<<<<< HEAD
+=======
+# ── AI Service ───────────────────────────────────────────────────────────────
+echo "==> Setting up FastAPI AI service..."
+cd /workspaces/ghostshift/ai-service
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
+
+>>>>>>> 7e8e4216a05669473d49948a2a304e412a5272ae
 # ── Frontend ─────────────────────────────────────────────────────────────────
 echo "==> Setting up React frontend..."
 cd /workspaces/ghostshift/frontend

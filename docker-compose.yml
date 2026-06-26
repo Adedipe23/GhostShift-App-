@@ -42,6 +42,25 @@ services:
       db:
         condition: service_healthy
 
+<<<<<<< HEAD
+=======
+  # ─────────────────────────────────────────────────────────────────────────────
+  # FastAPI AI Microservice (Uvicorn)
+  # ─────────────────────────────────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ghostshift_ai
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8001/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+>>>>>>> 7e8e4216a05669473d49948a2a304e412a5272ae
 
   # ─────────────────────────────────────────────────────────────────────────────
   # React Frontend (Nginx)
@@ -54,12 +73,20 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost/api
+<<<<<<< HEAD
+=======
+        VITE_AI_SERVICE_URL: http://localhost:8001
+>>>>>>> 7e8e4216a05669473d49948a2a304e412a5272ae
     container_name: ghostshift_frontend
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       - backend
+<<<<<<< HEAD
+=======
+      - ai-service
+>>>>>>> 7e8e4216a05669473d49948a2a304e412a5272ae
 
 volumes:
   postgres_data:
